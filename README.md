@@ -1,0 +1,2 @@
+# CurrencyReporter
+Notify latest currency

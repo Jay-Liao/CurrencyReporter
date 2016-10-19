@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 
 
 def get_sell_spot():
-    url = 'http://asper-bot-rates.appspot.com/currency.json'
-    response = requests.get(url)
-    json_data = json.loads(response.text)
+    # url = 'http://asper-bot-rates.appspot.com/currency.json'
+    # response = requests.get(url)
+    # json_data = json.loads(response.text)
     # print json_data
     # print json_data['createTime']
     # print json_data['updateTime']

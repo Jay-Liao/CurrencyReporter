@@ -7,8 +7,9 @@ import datetime
 import urllib2
 from datetime import timedelta
 from bs4 import BeautifulSoup
+from retrying import retry
 
-
+@retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_sell_spot():
     # url = 'http://asper-bot-rates.appspot.com/currency.json'
     # response = requests.get(url)
@@ -114,4 +115,3 @@ while True:
                 time.sleep(30)
                 continue
     time.sleep(30)
-

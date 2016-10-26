@@ -57,13 +57,13 @@ def post_message_to_general(message):
 #         print 'post message to Slack fails.'
 
 
-def is_time_in_valid_range(specific_time):
-    start = datetime.time(9, 0, 0)
-    end = datetime.time(15, 30, 0)
-    is_time_in_valid_range_bool = (start <= specific_time.time() <= end)
-    day_of_week = specific_time.strftime("%A") # Retrieve full name day of week from datetime ex. Monday
-    is_time_in_work_day_bool = (day_of_week != 'Saturday' and day_of_week != 'Sunday')
-    return is_time_in_valid_range_bool and is_time_in_work_day_bool
+# def is_time_in_valid_range(specific_time):
+#     start = datetime.time(9, 0, 0)
+#     end = datetime.time(15, 30, 0)
+#     is_time_in_valid_range_bool = (start <= specific_time.time() <= end)
+#     day_of_week = specific_time.strftime("%A") # Retrieve full name day of week from datetime ex. Monday
+#     is_time_in_work_day_bool = (day_of_week != 'Saturday' and day_of_week != 'Sunday')
+#     return is_time_in_valid_range_bool and is_time_in_work_day_bool
 
 
 # def post_statistic_report():
@@ -103,21 +103,20 @@ def get_notify_price():
 
 SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
 
-current_sell_spot = get_sell_spot()
 current_time = datetime.datetime.now()
 current_date_string = str(current_time.strftime("%Y-%m-%d"))
 sell_spot = get_sell_spot()
 current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
 message = current_time_info + ': ' + str(sell_spot)
 print message
-if is_time_in_valid_range(current_time):
-    if not is_date_key_exist(current_date_string):
+# if is_time_in_valid_range(current_time):
+if not is_date_key_exist(current_date_string):
+    set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
+    if sell_spot < SELL_SPOT_NOTIFY_PRICE:
+        post_message_to_general(message)
+else:
+    min_sell_spot_today = get_min_sell_spot_by_date_key(current_date_string)
+    if sell_spot < min_sell_spot_today:
         set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
         if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-            post_message_to_general(current_time_info)
-    else:
-        min_sell_spot_today = get_min_sell_spot_by_date_key(current_date_string)
-        if sell_spot < min_sell_spot_today:
-            set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
-            if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-                post_message_to_general(current_time_info)
+            post_message_to_general(message)

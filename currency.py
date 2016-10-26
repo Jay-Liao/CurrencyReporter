@@ -50,11 +50,11 @@ def post_message_to_general(message):
         print 'post message to Slack fails.'
 
 
-def post_message_to_statistic(message):
-    web_hook_url = 'https://hooks.slack.com/services/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'
-    response = requests.post(web_hook_url, json={"text": message})
-    if response.status_code != 200:
-        print 'post message to Slack fails.'
+# def post_message_to_statistic(message):
+#     web_hook_url = 'https://hooks.slack.com/services/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'
+#     response = requests.post(web_hook_url, json={"text": message})
+#     if response.status_code != 200:
+#         print 'post message to Slack fails.'
 
 
 def is_time_in_valid_range(specific_time):
@@ -66,12 +66,12 @@ def is_time_in_valid_range(specific_time):
     return is_time_in_valid_range_bool and is_time_in_work_day_bool
 
 
-def post_statistic_report():
-    report = ""
-    for key, value in date_to_min_sell_spot_dict.items():
-        report += '[' + date_to_time_info_dict.get(key) + ']: ' + str(value) + '\n'
-    if report != "":
-        post_message_to_statistic(report)
+# def post_statistic_report():
+#     report = ""
+#     for key, value in date_to_min_sell_spot_dict.items():
+#         report += '[' + date_to_time_info_dict.get(key) + ']: ' + str(value) + '\n'
+#     if report != "":
+#         post_message_to_statistic(report)
 
 
 def is_date_key_exist(date_key):
@@ -83,7 +83,8 @@ def is_date_key_exist(date_key):
 def get_min_sell_spot_by_date_key(date_key):
     config = ConfigParser.ConfigParser()
     config.read('MinSellSpotToday.txt')
-    return float(config.get('min_sell_spot', date_key))
+    min_sell_spot = config.get('min_sell_spot', date_key)
+    return float(min_sell_spot)
 
 
 def set_min_sell_spot_with_date_kay(date_key, sell_spot):
@@ -96,7 +97,8 @@ def set_min_sell_spot_with_date_kay(date_key, sell_spot):
 def get_notify_price():
     config = ConfigParser.ConfigParser()
     config.read('Config.ini')
-    return float(config.get('notify_price', 'notify_price'))
+    notify_price = config.get('notify_price', 'notify_price')
+    return float(notify_price)
 
 
 SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
@@ -106,16 +108,16 @@ current_time = datetime.datetime.now()
 current_date_string = str(current_time.strftime("%Y-%m-%d"))
 sell_spot = get_sell_spot()
 current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
-message = '現在時間: ' + current_time_info + ', 美金即期賣出價: ' + str(sell_spot)
-print message + ' (every 30s)'
+message = current_time_info + ': ' + str(sell_spot)
+print message
 if is_time_in_valid_range(current_time):
     if not is_date_key_exist(current_date_string):
         set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
         if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-            post_message_to_general('美金即期賣出價: ' + str(sell_spot))
+            post_message_to_general(current_time_info)
     else:
         min_sell_spot_today = get_min_sell_spot_by_date_key(current_date_string)
         if sell_spot < min_sell_spot_today:
             set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
             if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-                post_message_to_general('美金即期賣出價: ' + str(sell_spot))
+                post_message_to_general(current_time_info)

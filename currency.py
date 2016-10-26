@@ -105,9 +105,9 @@ current_sell_spot = get_sell_spot()
 current_time = datetime.datetime.now()
 current_date_string = str(current_time.strftime("%Y-%m-%d"))
 sell_spot = get_sell_spot()
-# current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
-# message = '現在時間: ' + current_time_info + ', 美金即期賣出價: ' + str(sell_spot)
-# print message + ' (every 30s)'
+current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
+message = '現在時間: ' + current_time_info + ', 美金即期賣出價: ' + str(sell_spot)
+print message + ' (every 30s)'
 if is_time_in_valid_range(current_time):
     if not is_date_key_exist(current_date_string):
         set_min_sell_spot_with_date_kay(current_date_string, sell_spot)

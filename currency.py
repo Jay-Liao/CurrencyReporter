@@ -8,21 +8,10 @@ import urllib2
 from datetime import timedelta
 from bs4 import BeautifulSoup
 from retrying import retry
+import ConfigParser
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_sell_spot():
-    # url = 'http://asper-bot-rates.appspot.com/currency.json'
-    # response = requests.get(url)
-    # json_data = json.loads(response.text)
-    # print json_data
-    # print json_data['createTime']
-    # print json_data['updateTime']
-    # ts = json_data['updateTime']
-    # ct = json_data['createTime']
-    # createTimeInfo = 'create time: ' + datetime.datetime.fromtimestamp(ct).strftime('%Y-%m-%d %H:%M:%S') + '(' + \
-    #                  json_data['createTime'] + ')'
-    # updateTimeInfo = 'update time: ' + datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') + '(' + \
-    #                  json_data['updateTime'] + ')'
     content = urllib2.urlopen(
         'https://ebank.taipeifubon.com.tw/B2C/cfhqu/cfhqu009/CFHQU009_Home.faces?menuId=CFH0201&showLogin=true&popupMode=true&popupMode=true&frameMode=false&frameMode=false').read()
     # print content
@@ -85,33 +74,48 @@ def post_statistic_report():
         post_message_to_statistic(report)
 
 
-date_to_min_sell_spot_dict = {}
-date_to_time_info_dict = {}
-SELL_SPOT_NOTIFY_PRICE = 31.35  # 到價提醒
-while True:
-    current_time = datetime.datetime.now()
-    current_date_string = str(current_time.strftime("%Y-%m-%d"))
-    sell_spot = get_sell_spot()
-    current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
-    message = '現在時間: ' + current_time_info + ', 美金即期賣出價: ' + str(sell_spot)
-    print message + ' (every 30s)'
-    if is_time_in_valid_range(current_time):
-        if current_date_string not in date_to_min_sell_spot_dict:
-            post_statistic_report()
-            date_to_min_sell_spot_dict[current_date_string] = sell_spot
-            date_to_time_info_dict[current_date_string] = current_time_info
+def is_date_key_exist(date_key):
+    config = ConfigParser.ConfigParser()
+    config.read('MinSellSpotToday.txt')
+    return config.has_option("min_sell_spot_today", date_key)
+
+
+def get_min_sell_spot_by_date_key(date_key):
+    config = ConfigParser.ConfigParser()
+    config.read('MinSellSpotToday.txt')
+    return float(config.get('min_sell_spot', date_key))
+
+
+def set_min_sell_spot_with_date_kay(date_key, sell_spot):
+    config = ConfigParser.ConfigParser()
+    config.read('MinSellSpotToday.txt')
+    config.set("min_sell_spot", date_key, sell_spot)
+    config.write(open('MinSellSpotToday.txt', 'wb'))
+
+
+def get_notify_price():
+    config = ConfigParser.ConfigParser()
+    config.read('Config.ini')
+    return float(config.get('notify_price', 'notify_price'))
+
+
+SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
+
+current_sell_spot = get_sell_spot()
+current_time = datetime.datetime.now()
+current_date_string = str(current_time.strftime("%Y-%m-%d"))
+sell_spot = get_sell_spot()
+# current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
+# message = '現在時間: ' + current_time_info + ', 美金即期賣出價: ' + str(sell_spot)
+# print message + ' (every 30s)'
+if is_time_in_valid_range(current_time):
+    if not is_date_key_exist(current_date_string):
+        set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
+        if sell_spot < SELL_SPOT_NOTIFY_PRICE:
+            post_message_to_general('美金即期賣出價: ' + str(sell_spot))
+    else:
+        min_sell_spot_today = get_min_sell_spot_by_date_key(current_date_string)
+        if sell_spot < min_sell_spot_today:
+            set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
             if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-                print message + ' [Notify Slack]'
                 post_message_to_general('美金即期賣出價: ' + str(sell_spot))
-        else:
-            min_sell_spot_today = date_to_min_sell_spot_dict.get(current_date_string)
-            if sell_spot < min_sell_spot_today:
-                date_to_min_sell_spot_dict[current_date_string] = sell_spot
-                date_to_time_info_dict[current_date_string] = current_time_info
-                if sell_spot < SELL_SPOT_NOTIFY_PRICE:
-                    print message + ' [Notify Slack]'
-                    post_message_to_general('美金即期賣出價: ' + str(sell_spot))
-            else:
-                time.sleep(30)
-                continue
-    time.sleep(30)

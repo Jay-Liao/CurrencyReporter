@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from retrying import retry
 import ConfigParser
 
+
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_sell_spot():
     content = urllib2.urlopen(
@@ -102,14 +103,20 @@ def get_notify_price():
     return float(notify_price)
 
 
-SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
+def append_new_line_to_file(message, filename):
+    with open(filename, 'a') as file:
+        file.writelines(message + '\n')
+    file.close()
 
+
+SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
+FILENAME = "output.txt"
 current_time = datetime.datetime.now()
 current_date_string = str(current_time.strftime("%Y-%m-%d"))
 sell_spot = get_sell_spot()
 current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
 message = current_time_info + ': ' + str(sell_spot)
-print message
+append_new_line_to_file(message, FILENAME)
 # if is_time_in_valid_range(current_time):
 if not is_date_key_exist(current_date_string):
     set_min_sell_spot_with_date_kay(current_date_string, sell_spot)

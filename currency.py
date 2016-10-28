@@ -79,7 +79,7 @@ def post_message_to_general(message):
 def is_date_key_exist(date_key):
     config = ConfigParser.ConfigParser()
     config.read('MinSellSpotToday.txt')
-    return config.has_option("min_sell_spot_today", date_key)
+    return config.has_option("min_sell_spot", date_key)
 
 
 def get_min_sell_spot_by_date_key(date_key):

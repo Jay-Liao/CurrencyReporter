@@ -79,22 +79,22 @@ def post_message_to_general(message):
 
 def is_date_key_exist(date_key):
     config = ConfigParser.ConfigParser()
-    config.read('MinSellSpotToday.txt')
+    config.read(MIN_SELL_SPOT_FILENAME)
     return config.has_option("min_sell_spot", date_key)
 
 
 def get_min_sell_spot_by_date_key(date_key):
     config = ConfigParser.ConfigParser()
-    config.read('MinSellSpotToday.txt')
+    config.read(MIN_SELL_SPOT_FILENAME)
     min_sell_spot = config.get('min_sell_spot', date_key)
     return float(min_sell_spot)
 
 
 def set_min_sell_spot_with_date_kay(date_key, sell_spot):
     config = ConfigParser.ConfigParser()
-    config.read('MinSellSpotToday.txt')
+    config.read(MIN_SELL_SPOT_FILENAME)
     config.set("min_sell_spot", date_key, sell_spot)
-    config.write(open('MinSellSpotToday.txt', 'wb'))
+    config.write(open(MIN_SELL_SPOT_FILENAME, 'wb'))
 
 
 def get_notify_price():
@@ -111,24 +111,25 @@ def append_new_line_to_file(message, filename):
 
 
 def check_min_sell_spot_file():
-    if not os.path.isfile('MinSellSpotToday.txt'):
-        file = open('MinSellSpotToday.txt', 'wb')
+    if not os.path.isfile(MIN_SELL_SPOT_FILENAME):
+        file = open(MIN_SELL_SPOT_FILENAME, 'wb')
         file.close()
         config = ConfigParser.ConfigParser()
-        config.read('MinSellSpotToday.txt')
+        config.read(MIN_SELL_SPOT_FILENAME)
         config.add_section('min_sell_spot')
-        config.write(open('MinSellSpotToday.txt', 'wb'))
+        config.write(open(MIN_SELL_SPOT_FILENAME, 'wb'))
 
 
-check_min_sell_spot_file()
 SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
-FILENAME = "output.txt"
+OUTPUT_FILENAME = "output.txt"
+MIN_SELL_SPOT_FILENAME = "MinSellSpot.txt"
+check_min_sell_spot_file()
 current_time = datetime.datetime.now()
 current_date_string = str(current_time.strftime("%Y-%m-%d"))
 sell_spot = get_sell_spot()
 current_time_info = str(current_time.strftime("%Y-%m-%d(%a) %H:%M:%S"))
 message = current_time_info + ': ' + str(sell_spot)
-append_new_line_to_file(message, FILENAME)
+append_new_line_to_file(message, OUTPUT_FILENAME)
 # if is_time_in_valid_range(current_time):
 if not is_date_key_exist(current_date_string):
     set_min_sell_spot_with_date_kay(current_date_string, sell_spot)

@@ -10,6 +10,7 @@ from datetime import timedelta
 from bs4 import BeautifulSoup
 from retrying import retry
 import ConfigParser
+import os
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
@@ -109,6 +110,17 @@ def append_new_line_to_file(message, filename):
     file.close()
 
 
+def check_min_sell_spot_file():
+    if not os.path.isfile('MinSellSpotToday.txt'):
+        file = open('MinSellSpotToday.txt', 'wb')
+        file.close()
+        config = ConfigParser.ConfigParser()
+        config.read('MinSellSpotToday.txt')
+        config.add_section('min_sell_spot')
+        config.write(open('MinSellSpotToday.txt', 'wb'))
+
+
+check_min_sell_spot_file()
 SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
 FILENAME = "output.txt"
 current_time = datetime.datetime.now()

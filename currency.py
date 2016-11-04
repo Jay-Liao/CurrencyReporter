@@ -2,15 +2,13 @@
 # coding=utf-8
 
 import requests
-import json
-import time
 import datetime
 import urllib2
-from datetime import timedelta
 from bs4 import BeautifulSoup
 from retrying import retry
 import ConfigParser
 import os
+import smtplib
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
@@ -120,6 +118,17 @@ def check_min_sell_spot_file():
         config.write(open(MIN_SELL_SPOT_FILENAME, 'wb'))
 
 
+def send_mail(to_address, message):
+    message = 'Subject: %s\n\n%s' % ('Currency Notification', message)
+    FROM_ADDRESS = "currency.reporter@gmail.com"
+    PASSWORD = "54323013"
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(FROM_ADDRESS, PASSWORD)
+    server.sendmail(FROM_ADDRESS, to_address, message)
+    server.quit()
+
+
 SELL_SPOT_NOTIFY_PRICE = get_notify_price()  # 到價提醒
 OUTPUT_FILENAME = "output.txt"
 MIN_SELL_SPOT_FILENAME = "MinSellSpot.txt"
@@ -135,9 +144,12 @@ if not is_date_key_exist(current_date_string):
     set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
     if sell_spot < SELL_SPOT_NOTIFY_PRICE:
         post_message_to_general(message)
+        send_mail('j99590314@gmail.com', 'USD: ' + str(sell_spot))
 else:
     min_sell_spot_today = get_min_sell_spot_by_date_key(current_date_string)
     if sell_spot < min_sell_spot_today:
         set_min_sell_spot_with_date_kay(current_date_string, sell_spot)
         if sell_spot < SELL_SPOT_NOTIFY_PRICE:
             post_message_to_general(message)
+            send_mail('j99590314@gmail.com', 'USD: ' + str(sell_spot))
+

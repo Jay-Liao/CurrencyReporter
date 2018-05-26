@@ -1,6 +1,14 @@
 # CurrencyReporter
-Notify latest currency
+ The USD latest currency notifier based on beautifulsoup and slack.
 
-Enviroment:
+## Precondition
+- virtualenv
 
-pip install pyOpenSSL ndg-httpsclient pyasn1  (Ubuntu 14.04)
+## Setup
+```sh
+git clone https://github.com/Jay-Liao/CurrencyReporter.git
+cd CurrencyReporter
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```

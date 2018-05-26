@@ -50,7 +50,7 @@ def post_message_to_general(message):
     web_hook_url = 'https://hooks.slack.com/services/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'
     response = requests.post(web_hook_url, json={"text": message})
     if response.status_code != 200:
-        print 'post message to Slack fails.'
+        print("post message to Slack fails.")
 
 
 def is_date_key_exist(date_key):
